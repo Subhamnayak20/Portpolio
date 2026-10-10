@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Building a Data Analytics Dashboard with Power BI — Subham Nayak</title>
+  <meta name="description" content="A step-by-step outline for planning, modelling and designing a Power BI dashboard, with starter DAX measures. Draft: add your own dashboard and screenshots before publishing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Data Analytics</li></ul>
+          <h1>Building a Data Analytics Dashboard with Power BI</h1>
+          <p class="article-intro">A good dashboard answers a few specific questions quickly. This outline walks through the path from business question to published report.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>2 min read</span> <span class="badge-draft">Draft</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<div class="callout draft"><p><strong>Draft.</strong> This is a general guide, not a description of a specific project. Before publishing it, add your own dataset, your own dashboard screenshots, and what you learned building it.</p></div>
+
+<h2>1. Start with the questions</h2>
+<p>List the three to five questions the dashboard must answer, such as "Is revenue growing?" and "Which regions are falling behind?". Each question suggests a KPI and a visual. Anything that does not serve a question can be left out.</p>
+
+<h2>2. Prepare the data in Power Query</h2>
+<ul>
+  <li>Set the correct data type for every column, especially dates and numbers.</li>
+  <li>Remove duplicates and handle null values deliberately.</li>
+  <li>Trim and standardise text such as region and category names.</li>
+  <li>Keep each query focused: one table, one subject.</li>
+</ul>
+
+<h2>3. Model the data as a star schema</h2>
+<p>Put numeric events (orders, transactions) in a <strong>fact table</strong> and descriptive attributes (date, product, customer, region) in <strong>dimension tables</strong>. Connect each dimension to the fact table with a one-to-many relationship. A separate date table, marked as the model's date table, is required for time-intelligence functions.</p>
+
+<h2>4. Write measures with DAX</h2>
+<p>Measures calculate on the fly and respond to filters and slicers. These are starter examples that assume a <code>Sales</code> table and a marked <code>'Date'</code> table.</p>
+<div class="code-block"><span class="code-lang">DAX</span><pre tabindex="0" aria-label="DAX code example"><code class="language-dax">Total Sales = SUM ( Sales[Amount] )
+
+Order Count = DISTINCTCOUNT ( Sales[OrderID] )
+
+Average Order Value = DIVIDE ( [Total Sales], [Order Count] )
+
+Sales Last Year =
+    CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+YoY Growth % =
+    DIVIDE ( [Total Sales] - [Sales Last Year], [Sales Last Year] )</code></pre></div>
+<p><code>DIVIDE</code> returns a blank instead of an error when the denominator is zero.</p>
+
+<h2>5. Pick visuals that fit the question</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Question type</th><th>Good visual</th></tr></thead>
+  <tbody>
+    <tr><td>Single headline number</td><td>Card or KPI visual</td></tr>
+    <tr><td>Change over time</td><td>Line or column chart</td></tr>
+    <tr><td>Compare categories</td><td>Bar chart, sorted</td></tr>
+    <tr><td>Share of a whole (few categories)</td><td>Stacked bar or donut</td></tr>
+    <tr><td>Exact values or detail</td><td>Table or matrix</td></tr>
+    <tr><td>Location</td><td>Map</td></tr>
+  </tbody>
+</table></div>
+
+<div class="placeholder-fig" role="img" aria-label="Placeholder for a dashboard screenshot">Add a screenshot of your dashboard here (see the README for how to add images to an article).</div>
+
+<h2>6. Lay it out for scanning</h2>
+<ul>
+  <li>Put the key KPI cards across the top, trends in the middle, and breakdowns or detail below.</li>
+  <li>Use a small, consistent colour palette and clear titles that state what the visual shows.</li>
+  <li>Place slicers where people expect them (top or left) and limit them to the filters that matter.</li>
+  <li>Prefer fewer visuals that are easy to read over many that compete for attention.</li>
+</ul>
+
+<h2>7. Check before sharing</h2>
+<ul>
+  <li>Totals reconcile with the source data or a simple query.</li>
+  <li>Slicers and cross-filtering behave as expected on every page.</li>
+  <li>Labels, units and date ranges are clear.</li>
+  <li>A refresh schedule is set if the data changes.</li>
+</ul>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="about.html#skills"><strong>Skills</strong><span>Power BI, KPI analysis and data visualization are listed among the analytics skills.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

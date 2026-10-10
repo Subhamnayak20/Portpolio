@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linear Regression Explained with a Practical Python Example — Subham Nayak</title>
+  <meta name="description" content="How linear regression fits a line by least squares, with a step-by-step Python example covering training, prediction, evaluation and residual checks.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Machine Learning</li><li>Python</li></ul>
+          <h1>Linear Regression Explained with a Practical Python Example</h1>
+          <p class="article-intro">Linear regression is often the first model people learn, and it remains a strong baseline. This walkthrough builds one in Python on generated data, so you can see that the model recovers the pattern it was given.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>3 min read</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<h2>The idea</h2>
+<p>Simple linear regression models a numeric target as a straight-line function of one feature:</p>
+<code class="formula">ŷ = β₀ + β₁ · x</code>
+<p>β₀ is the intercept and β₁ is the slope. The difference between an actual value and the prediction is the <strong>residual</strong>, y − ŷ. Ordinary least squares chooses the coefficients that minimise the sum of the squared residuals. With several features the model becomes ŷ = β₀ + β₁x₁ + β₂x₂ + …, and the same idea applies.</p>
+
+<h2>A practical example: price from size</h2>
+<p>The data below is <strong>generated</strong>, not real. Prices follow a known rule (50,000 plus 120 per square foot) with random noise added, so we can check whether the model finds that rule.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+
+# Generate synthetic data: price = 50,000 + 120 * size + noise
+rng = np.random.default_rng(42)
+size = rng.uniform(500, 3500, 200)                         # square feet
+price = 50_000 + 120 * size + rng.normal(0, 25_000, 200)   # dollars
+df = pd.DataFrame({"size_sqft": size, "price": price})
+
+X = df[["size_sqft"]]    # features must be 2-D (a DataFrame, not a Series)
+y = df["price"]
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = LinearRegression().fit(X_train, y_train)
+print("Intercept:", model.intercept_)
+print("Slope:", model.coef_[0])
+
+pred = model.predict(X_test)
+print("MAE:", mean_absolute_error(y_test, pred))
+print("R^2:", r2_score(y_test, pred))</code></pre></div>
+
+<h2>Reading the output</h2>
+<ul>
+  <li><strong>Intercept:</strong> the predicted price at size 0. On its own it is often not meaningful, because a house of 0 sq ft does not exist.</li>
+  <li><strong>Slope (coefficient):</strong> the expected change in price for each extra square foot.</li>
+  <li><strong>MAE:</strong> the average absolute prediction error, in the same units as the price.</li>
+  <li><strong>R²:</strong> the share of variance in the test targets that the model explains. 1.0 is perfect and 0.0 is no better than predicting the mean.</li>
+</ul>
+<p>Because the noise is random, the learned slope should be in the neighbourhood of 120 and the intercept in the neighbourhood of 50,000, but neither will match exactly. The intercept is usually the less precise of the two, because it is extrapolated back to a house of size 0, far from where the data lies.</p>
+
+<h2>Predicting and cross-checking</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python"># Predict the price of an 1,800 sq ft house
+new_house = pd.DataFrame({"size_sqft": [1800]})
+print(model.predict(new_house))
+
+# Cross-check with NumPy: a degree-1 fit is the same least-squares line
+slope, intercept = np.polyfit(X_train["size_sqft"], y_train, 1)
+print(slope, intercept)</code></pre></div>
+<p>A degree-1 polynomial fit is the same least-squares line, so <code>np.polyfit</code> is a quick way to confirm the result.</p>
+
+<h2>Check the assumptions with a residual plot</h2>
+<p>Linear regression works best when these roughly hold:</p>
+<ul>
+  <li>The relationship between features and target is linear.</li>
+  <li>Errors are independent of each other.</li>
+  <li>Errors have constant variance (homoscedasticity).</li>
+  <li>Features are not strongly correlated with each other (multicollinearity).</li>
+  <li>For confidence intervals and p-values, residuals are roughly normally distributed.</li>
+</ul>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">import matplotlib.pyplot as plt
+
+residuals = y_test - pred
+plt.scatter(pred, residuals, alpha=0.7)
+plt.axhline(0, color="black", linewidth=1)
+plt.xlabel("Predicted price")
+plt.ylabel("Residual (actual - predicted)")
+plt.title("Residuals vs predictions")
+plt.show()</code></pre></div>
+<p>A random cloud around zero is what you want. A curve suggests the relationship is not linear, and a funnel shape suggests the error grows with the prediction.</p>
+
+<h2>Going beyond one feature</h2>
+<p>To add features, put more columns in <code>X</code>, for example <code>df[["size_sqft", "bedrooms", "age"]]</code>. Encode categorical columns (for example with one-hot encoding), and consider scaling if you move to Ridge or Lasso regression, since regularisation depends on feature scale.</p>
+<div class="callout"><p><strong>Takeaway.</strong> Fit on training data, judge on test data, and look at the residuals before trusting the coefficients.</p></div>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="projects.html"><strong>Machine Learning Models</strong><span>House price prediction is one of the supervised ML projects in this portfolio.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

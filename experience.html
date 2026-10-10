@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Experience &amp; Resume — Subham Nayak</title>
+  <meta name="description" content="Internships, achievements and the resume of Subham Nayak.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html" aria-current="page">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="page-head">
+      <div class="container hero-anim">
+        <span class="eyebrow">Experience &amp; Resume</span>
+        <h1>Experience</h1>
+        <p>Internships and training, achievements, and my full resume.</p>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="#resume">View Resume</a>
+          <a class="btn btn-outline" href="assets/resume.pdf" download="Subham-Nayak-Resume.pdf">Download Resume</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE TIMELINE (most recent first) -->
+    <section>
+      <div class="container">
+        <ol class="timeline">
+          <li class="reveal">
+            <div class="card">
+              <div class="timeline-top">
+                <h3>SDE Intern — Spikewell Pvt. Ltd.</h3>
+                <span class="meta">March 2026 – Sept 2026 · Bhubaneswar, Odisha</span>
+              </div>
+              <ul>
+                <li>Developed data pipelines in Microsoft Fabric for data ingestion and transformation, supporting downstream analytics workflows.</li>
+                <li>Worked with Data Engineering concepts, including data ingestion, transformation, Data Lakehouse, Warehouse, Medallion Architecture and pipeline development in Microsoft Fabric.</li>
+              </ul>
+            </div>
+          </li>
+          <li class="reveal">
+            <div class="card">
+              <div class="timeline-top">
+                <h3>Internship in AI &amp; DL — Central Tool Room Training Center</h3>
+                <span class="meta">June 2024 · Bhubaneswar, Odisha</span>
+              </div>
+              <ul>
+                <li>Implemented deep learning models for image recognition, achieving 95% test accuracy on benchmark datasets.</li>
+                <li>Tools: TensorFlow, Google Colab.</li>
+              </ul>
+            </div>
+          </li>
+          <li class="reveal">
+            <div class="card">
+              <div class="timeline-top">
+                <h3>Machine Learning (Training) — Internshala</h3>
+                <span class="meta">October 2023 – Nov 2023 · Online</span>
+              </div>
+              <ul>
+                <li>Built and optimized supervised ML models that improved classification accuracy by 15% on sample datasets.</li>
+              </ul>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ACHIEVEMENTS (certifications now live on certifications.html) -->
+    <section class="section-alt" id="achievements">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Achievements</span>
+          <h2>Achievements &amp; activities</h2>
+        </div>
+        <div class="grid grid-2">
+          <div class="card reveal">
+            <h3>Hackathon</h3>
+            <p class="muted" style="margin:0">Designed an AI-supported career decision-making model that analyzed academic marks for personalized guidance during a one-day hackathon.</p>
+          </div>
+          <div class="card reveal">
+            <h3>Member of NSS</h3>
+            <p class="muted" style="margin:0">Social awareness campaigns and environmental conservation, demonstrating leadership and teamwork.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESUME VIEWER: shows assets/resume.pdf. Replace that file to update the resume; no code changes needed. -->
+    <section id="resume">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Resume</span>
+          <h2>My resume</h2>
+        </div>
+        <div class="pdf-viewer reveal">
+          <object data="assets/resume.pdf#view=FitH" type="application/pdf" aria-label="Resume of Subham Nayak (PDF)">
+            <!-- Shown only when the browser cannot display PDFs inline (common on phones) -->
+            <div class="pdf-fallback">
+              <p>Your browser can't show the PDF here.</p>
+              <div class="btn-row">
+                <a class="btn btn-primary" href="assets/resume.pdf" target="_blank" rel="noopener">Open Resume in a New Tab</a>
+                <a class="btn btn-outline" href="assets/resume.pdf" download="Subham-Nayak-Resume.pdf">Download Resume</a>
+              </div>
+            </div>
+          </object>
+        </div>
+        <div class="resume-actions reveal">
+          <a class="btn btn-primary btn-lg" href="assets/resume.pdf" download="Subham-Nayak-Resume.pdf" aria-label="Download Subham Nayak's resume as a PDF">Download Resume</a>
+          <p class="notice">Trouble viewing it above? <a href="assets/resume.pdf" target="_blank" rel="noopener">Open the PDF in a new tab</a>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

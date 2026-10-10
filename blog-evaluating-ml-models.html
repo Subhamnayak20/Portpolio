@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluating Machine Learning Models — Subham Nayak</title>
+  <meta name="description" content="How to judge a model honestly: held-out test sets, classification metrics beyond accuracy, cross-validation, regression metrics, and spotting overfitting.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Machine Learning</li><li>Python</li></ul>
+          <h1>Evaluating Machine Learning Models</h1>
+          <p class="article-intro">A model that scores well on the data it was trained on tells you very little. This article covers the habits and metrics that give a trustworthy picture of performance.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>3 min read</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<h2>Start with data the model has not seen</h2>
+<p>Split the data into a training set, used to fit the model, and a test set, used once at the end to estimate real-world performance. If you tune settings, add a validation set (or use cross-validation) so the test set stays untouched. For classification, use <code>stratify=y</code> so each split keeps the same class proportions.</p>
+
+<h2>Classification: more than accuracy</h2>
+<p>Predictions fall into four groups, shown in a confusion matrix:</p>
+<div class="table-wrap"><table>
+  <thead><tr><th></th><th>Predicted positive</th><th>Predicted negative</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Actually positive</strong></td><td>True positive (TP)</td><td>False negative (FN)</td></tr>
+    <tr><td><strong>Actually negative</strong></td><td>False positive (FP)</td><td>True negative (TN)</td></tr>
+  </tbody>
+</table></div>
+<div class="table-wrap"><table>
+  <thead><tr><th>Metric</th><th>Formula</th><th>Answers the question</th></tr></thead>
+  <tbody>
+    <tr><td>Accuracy</td><td>(TP + TN) / all</td><td>How often is the model right overall?</td></tr>
+    <tr><td>Precision</td><td>TP / (TP + FP)</td><td>When it predicts positive, how often is it correct?</td></tr>
+    <tr><td>Recall</td><td>TP / (TP + FN)</td><td>Of the real positives, how many did it find?</td></tr>
+    <tr><td>F1 score</td><td>2 · P · R / (P + R)</td><td>A single balance of precision and recall</td></tr>
+    <tr><td>ROC AUC</td><td>Area under the ROC curve</td><td>How well does it rank positives above negatives across thresholds?</td></tr>
+  </tbody>
+</table></div>
+<div class="callout"><p><strong>The accuracy trap.</strong> Imagine 1,000 transactions of which 20 are fraudulent. A model that always predicts "not fraud" scores 98% accuracy and catches none of the fraud (recall = 0). On imbalanced data, look at precision, recall and F1.</p></div>
+
+<h3>Example in scikit-learn</h3>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">from sklearn.datasets import load_breast_cancer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+X, y = load_breast_cancer(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+proba = model.predict_proba(X_test)[:, 1]   # probability of class 1
+print("ROC AUC:", roc_auc_score(y_test, proba))</code></pre></div>
+
+<h2>Cross-validation</h2>
+<p>A single split can be lucky or unlucky. K-fold cross-validation trains and tests on several different splits and reports the average and spread. Putting the preprocessing inside a pipeline keeps each fold honest.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">from sklearn.model_selection import cross_val_score
+
+# Uses the pipeline and data from the previous example
+scores = cross_val_score(model, X, y, cv=5, scoring="f1")
+print("F1 per fold:", scores)
+print("Mean:", scores.mean(), "Std:", scores.std())</code></pre></div>
+
+<h2>Regression metrics</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Metric</th><th>What it tells you</th></tr></thead>
+  <tbody>
+    <tr><td>MAE (mean absolute error)</td><td>Average size of the errors, in the target's units</td></tr>
+    <tr><td>MSE (mean squared error)</td><td>Average of squared errors; penalises large errors heavily</td></tr>
+    <tr><td>RMSE</td><td>Square root of MSE, back in the target's units</td></tr>
+    <tr><td>R²</td><td>Share of target variance explained; 1 is perfect, 0 matches predicting the mean, and it can be negative</td></tr>
+  </tbody>
+</table></div>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">import numpy as np
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+
+X, y = make_regression(n_samples=300, n_features=5, noise=15, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+pred = LinearRegression().fit(X_train, y_train).predict(X_test)
+
+print("MAE: ", mean_absolute_error(y_test, pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, pred)))
+print("R^2: ", r2_score(y_test, pred))</code></pre></div>
+
+<h2>Overfitting and underfitting</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Pattern</th><th>Meaning</th><th>Things to try</th></tr></thead>
+  <tbody>
+    <tr><td>High training score, much lower validation score</td><td>Overfitting: the model memorised noise</td><td>More data, simpler model, regularisation, fewer features</td></tr>
+    <tr><td>Low scores on both</td><td>Underfitting: the model is too simple or the features are weak</td><td>Better features, a more flexible model</td></tr>
+    <tr><td>Similar, good scores on both</td><td>A reasonable fit</td><td>Confirm once on the untouched test set</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Evaluation checklist</h2>
+<ul>
+  <li>Hold out a test set and use it only once.</li>
+  <li>Choose metrics that match the cost of each kind of mistake.</li>
+  <li>Compare against a simple baseline, such as predicting the majority class or the mean.</li>
+  <li>Use cross-validation for a more stable estimate.</li>
+  <li>Keep preprocessing inside the pipeline to avoid leakage.</li>
+</ul>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="projects.html"><strong>Machine Learning Models</strong><span>Classification and regression projects where evaluation applies.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>
