@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exploratory Data Analysis Using pandas — Subham Nayak</title>
+  <meta name="description" content="A repeatable EDA routine in pandas: inspect structure, find missing values and duplicates, clean text and types, summarise by group, spot outliers and plot distributions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Python</li><li>Data Analytics</li></ul>
+          <h1>Exploratory Data Analysis Using pandas</h1>
+          <p class="article-intro">Before modelling or building a dashboard, you need to know what is in your data. This is a checklist-style routine you can reuse on most tabular datasets.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>2 min read</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<h2>The example dataset</h2>
+<p>The code assumes a CSV called <code>sales.csv</code> with the columns <code>order_date</code>, <code>region</code>, <code>category</code> and <code>amount</code>. Replace it with your own file and column names.</p>
+
+<h2>1. Load and look at the structure</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">import pandas as pd
+
+df = pd.read_csv("sales.csv", parse_dates=["order_date"])
+
+print(df.shape)     # (rows, columns)
+print(df.head())    # first five rows
+df.info()           # column names, types, non-null counts</code></pre></div>
+<p>You are checking the number of rows and columns, whether dates were parsed as dates, and whether numbers were read as numbers instead of text.</p>
+
+<h2>2. Missing values and duplicates</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">print(df.isna().sum())          # missing values per column
+print(df.duplicated().sum())    # number of fully duplicated rows
+
+df = df.drop_duplicates()
+
+# One option for a numeric column: fill with the median
+df["amount"] = df["amount"].fillna(df["amount"].median())</code></pre></div>
+<p>There is no single right way to handle missing values. Dropping rows, filling with the median, or leaving them as missing can all be correct, depending on how many are missing and why. Write down the choice you make.</p>
+
+<h2>3. Clean text and fix types</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">df["region"] = df["region"].str.strip().str.title()
+df["category"] = df["category"].str.strip().str.title()
+df["amount"] = pd.to_numeric(df["amount"], errors="coerce")  # bad values become NaN</code></pre></div>
+<p>Inconsistent labels such as "north", "North " and "NORTH" would otherwise be counted as three different regions.</p>
+
+<h2>4. Understand distributions and categories</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">import matplotlib.pyplot as plt
+
+print(df["amount"].describe())          # count, mean, std, quartiles, min, max
+print(df["region"].value_counts())      # rows per region
+
+df["amount"].plot(kind="hist", bins=30, title="Order amount")
+plt.show()</code></pre></div>
+
+<h2>5. Summarise by group and over time</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">by_region = (
+    df.groupby("region")["amount"]
+      .agg(["count", "mean", "median", "sum"])
+      .sort_values("sum", ascending=False)
+)
+print(by_region)
+
+monthly = df.set_index("order_date")["amount"].resample("MS").sum()
+monthly.plot(title="Monthly revenue")
+plt.show()</code></pre></div>
+<p><code>resample</code> needs a datetime index. <code>"MS"</code> groups by calendar month, labelled by the first day of the month.</p>
+
+<h2>6. Look for outliers</h2>
+<p>The interquartile range (IQR) rule flags values more than 1.5 × IQR below the first quartile or above the third quartile.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">q1, q3 = df["amount"].quantile([0.25, 0.75])
+iqr = q3 - q1
+lower, upper = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+
+outliers = df[(df["amount"] &lt; lower) | (df["amount"] &gt; upper)]
+print(len(outliers), "possible outliers")
+
+df.boxplot(column="amount", by="region")
+plt.show()</code></pre></div>
+<p>An outlier is not automatically an error. Check whether it is a typo, a rare but genuine event, or an important case before removing it.</p>
+
+<h2>7. Check relationships</h2>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">numeric = df.select_dtypes(include="number")
+print(numeric.corr())</code></pre></div>
+<p>A correlation coefficient measures linear association only, and correlation does not imply causation.</p>
+
+<h2>EDA checklist</h2>
+<ul>
+  <li>Shape, column types and a few sample rows.</li>
+  <li>Missing values and duplicates, with a note of what you did.</li>
+  <li>Category labels and date formats are consistent.</li>
+  <li>Distributions, ranges and outliers of the important numeric columns.</li>
+  <li>Summaries by the groups that matter to the question.</li>
+  <li>A short list of findings and open questions to take into modelling or reporting.</li>
+</ul>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="projects.html"><strong>Machine Learning Models</strong><span>The ML projects in this portfolio start with EDA and preprocessing.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

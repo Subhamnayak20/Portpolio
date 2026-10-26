@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Understanding Feature Scaling: Standardization vs. Normalization — Subham Nayak</title>
+  <meta name="description" content="Why scaling matters for many machine learning algorithms, how standardization and min-max normalization differ, and how to apply them in scikit-learn without data leakage.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Machine Learning</li><li>Python</li></ul>
+          <h1>Understanding Feature Scaling: Standardization vs. Normalization</h1>
+          <p class="article-intro">Features rarely arrive on the same scale. House size might run into the thousands while the number of bedrooms stays under ten. This article explains why that matters and how to choose between the two most common fixes.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>4 min read</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<h2>Why scaling matters</h2>
+<p>Many algorithms compare or combine features numerically. If one feature ranges from 0 to 100,000 and another from 0 to 5, the large one dominates any distance calculation, and gradient descent takes a long, zig-zag path to the minimum.</p>
+<p>Scaling usually matters for:</p>
+<ul>
+  <li><strong>Distance-based models:</strong> k-nearest neighbours, k-means, and support vector machines.</li>
+  <li><strong>Gradient-descent models:</strong> logistic regression, neural networks, and regularised regression such as Ridge and Lasso.</li>
+  <li><strong>Projection methods:</strong> PCA, which looks for directions of maximum variance.</li>
+</ul>
+<p>Tree-based models (decision trees, random forests, gradient boosting) split on thresholds within a single feature, so they are largely unaffected. Ordinary least squares also gives the same predictions with or without scaling, but its coefficients only become comparable across features once the features share a scale.</p>
+
+<h2>Standardization (z-score)</h2>
+<p>Standardization shifts each feature to a mean of 0 and rescales it to a standard deviation of 1.</p>
+<code class="formula">z = (x − μ) / σ</code>
+<p>The result is not bounded to a fixed range. Standardization is a common default because it keeps the shape of the distribution and does not squeeze most values into a narrow band when a few extreme values exist.</p>
+
+<h2>Normalization (min-max scaling)</h2>
+<p>Min-max scaling maps the smallest value to 0 and the largest to 1.</p>
+<code class="formula">x′ = (x − min) / (max − min)</code>
+<p>The output range is guaranteed for the data used to fit the scaler, which is handy for inputs that are naturally bounded, such as pixel intensities. The weakness is sensitivity to outliers: one extreme value stretches the range and compresses everything else.</p>
+<div class="callout"><p><strong>Terminology.</strong> "Normalization" sometimes also means scaling each row to unit length (scikit-learn's <code>Normalizer</code>). In this article it means min-max scaling.</p></div>
+
+<h2>A small worked example</h2>
+<p>Take the values 10, 20, 30, 40 and 50. The mean is 30 and the (population) standard deviation is √200 ≈ 14.14.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Original x</th><th>Standardized z</th><th>Min-max x′</th></tr></thead>
+  <tbody>
+    <tr><td>10</td><td>−1.41</td><td>0.00</td></tr>
+    <tr><td>20</td><td>−0.71</td><td>0.25</td></tr>
+    <tr><td>30</td><td>0.00</td><td>0.50</td></tr>
+    <tr><td>40</td><td>0.71</td><td>0.75</td></tr>
+    <tr><td>50</td><td>1.41</td><td>1.00</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Scaling in scikit-learn</h2>
+<p>Both scalers follow the same pattern: <code>fit</code> learns the statistics, <code>transform</code> applies them.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# Feature 1: house size (sq ft). Feature 2: number of bedrooms.
+X = np.array([
+    [850, 2], [1200, 3], [1500, 3], [1750, 4],
+    [2100, 4], [2400, 4], [3000, 5], [3400, 5],
+], dtype=float)
+
+X_train, X_test = train_test_split(X, test_size=0.25, random_state=42)
+
+# Standardization: learn mean and std from the training data only
+std_scaler = StandardScaler().fit(X_train)
+X_train_std = std_scaler.transform(X_train)
+X_test_std = std_scaler.transform(X_test)
+
+# Min-max normalization: learn min and max from the training data only
+mm_scaler = MinMaxScaler().fit(X_train)
+X_train_mm = mm_scaler.transform(X_train)
+X_test_mm = mm_scaler.transform(X_test)
+
+print(X_train_std.mean(axis=0))   # close to [0, 0]
+print(X_train_std.std(axis=0))    # [1, 1]
+print(X_train_mm.min(axis=0))     # [0, 0]
+print(X_train_mm.max(axis=0))     # [1, 1]</code></pre></div>
+<p>Notice that the scalers are fitted on the training rows only. The test rows are transformed with the training statistics, so a test value can legitimately fall outside the 0 to 1 range after min-max scaling.</p>
+
+<h2>Avoid data leakage with a pipeline</h2>
+<p>If you fit a scaler on the full dataset before splitting, information about the test set leaks into training and your evaluation looks better than it should. A pipeline makes the correct order automatic, including inside cross-validation.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">from sklearn.datasets import load_breast_cancer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+X, y = load_breast_cancer(return_X_y=True)
+
+# The scaler is re-fitted on the training part of every fold, so nothing leaks
+model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+scores = cross_val_score(model, X, y, cv=5)
+print(scores.mean())</code></pre></div>
+
+<h2>Which one should you use?</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Aspect</th><th>Standardization</th><th>Min-max normalization</th></tr></thead>
+  <tbody>
+    <tr><td>Formula</td><td>(x − mean) / std</td><td>(x − min) / (max − min)</td></tr>
+    <tr><td>Output range</td><td>Unbounded, centred on 0</td><td>0 to 1 on the fitting data</td></tr>
+    <tr><td>Outliers</td><td>Affect mean and std, but do not squash other values as sharply</td><td>One outlier compresses all other values</td></tr>
+    <tr><td>Typical use</td><td>Linear and logistic regression, SVM, PCA, k-NN</td><td>Neural networks, bounded inputs such as pixels</td></tr>
+  </tbody>
+</table></div>
+<p>If your data has heavy outliers, <code>RobustScaler</code> (based on the median and interquartile range) is worth trying. When in doubt, start with standardization and compare validation scores.</p>
+
+<h2>Common mistakes</h2>
+<ul>
+  <li>Fitting the scaler on all the data before the train/test split.</li>
+  <li>Using different scalers (or forgetting the scaler) at prediction time. Save the whole pipeline instead.</li>
+  <li>Scaling one-hot encoded columns for no reason. It is harmless but usually unnecessary.</li>
+  <li>Scaling the target without converting predictions back to the original units.</li>
+</ul>
+<div class="callout"><p><strong>Takeaway.</strong> Scale when the algorithm is sensitive to feature magnitude, fit on training data only, and let a pipeline enforce that for you.</p></div>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="projects.html"><strong>Machine Learning Models</strong><span>Supervised ML projects including house price prediction and classification.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

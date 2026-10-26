@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medallion Architecture: Bronze, Silver and Gold Layers in Microsoft Fabric — Subham Nayak</title>
+  <meta name="description" content="What the medallion pattern is, why data engineers use it, and a minimal PySpark sketch of the three layers in a Microsoft Fabric lakehouse. Draft for you to expand with your own experience.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Data Engineering</li><li>Microsoft Fabric</li></ul>
+          <h1>Medallion Architecture: Bronze, Silver and Gold Layers in Microsoft Fabric</h1>
+          <p class="article-intro">The medallion architecture organises a lakehouse into layers of increasing quality. It is a common pattern in Microsoft Fabric data engineering work.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>2 min read</span> <span class="badge-draft">Draft</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<div class="callout draft"><p><strong>Draft.</strong> This article explains the general pattern. Before publishing, add examples from your own pipelines and what you learned from them.</p></div>
+
+<h2>The three layers</h2>
+<figure class="figure">
+<svg viewBox="0 0 720 170" role="img" aria-labelledby="medal-title medal-desc">
+  <title id="medal-title">Medallion architecture: bronze, silver, gold</title>
+  <desc id="medal-desc">Raw data flows into the bronze layer, is cleaned into the silver layer, and is aggregated into the gold layer.</desc>
+  <rect class="dg-box" x="10" y="30" width="200" height="110" rx="12" stroke="#c08a4a"/>
+  <text class="dg-title" x="110" y="68" text-anchor="middle">Bronze</text>
+  <text class="dg-text" x="110" y="94" text-anchor="middle">Raw data as ingested</text>
+  <text class="dg-text" x="110" y="114" text-anchor="middle">Keep history, no cleaning</text>
+  <polygon class="dg-arrow" points="222,85 248,85 248,78 262,90 248,102 248,95 222,95"/>
+  <rect class="dg-box" x="260" y="30" width="200" height="110" rx="12" stroke="#aeb8c8"/>
+  <text class="dg-title" x="360" y="68" text-anchor="middle">Silver</text>
+  <text class="dg-text" x="360" y="94" text-anchor="middle">Cleaned and validated</text>
+  <text class="dg-text" x="360" y="114" text-anchor="middle">Typed, deduplicated</text>
+  <polygon class="dg-arrow" points="472,85 498,85 498,78 512,90 498,102 498,95 472,95"/>
+  <rect class="dg-box" x="510" y="30" width="200" height="110" rx="12" stroke="#e5b94a"/>
+  <text class="dg-title" x="610" y="68" text-anchor="middle">Gold</text>
+  <text class="dg-text" x="610" y="94" text-anchor="middle">Business-ready tables</text>
+  <text class="dg-text" x="610" y="114" text-anchor="middle">Aggregated for reporting</text>
+</svg>
+<figcaption>Data becomes more refined as it moves from left to right.</figcaption>
+</figure>
+<div class="table-wrap"><table>
+  <thead><tr><th>Layer</th><th>Contents</th><th>Typical operations</th></tr></thead>
+  <tbody>
+    <tr><td>Bronze</td><td>Raw data copied from the source, mostly unchanged</td><td>Ingest, add load timestamp or source name</td></tr>
+    <tr><td>Silver</td><td>Cleaned, validated and conformed data</td><td>Fix data types, remove duplicates, handle nulls, join reference data</td></tr>
+    <tr><td>Gold</td><td>Curated tables shaped for analytics</td><td>Aggregate, build dimensional models, define business metrics</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Why use layers?</h2>
+<ul>
+  <li><strong>Traceability:</strong> raw data is kept, so you can rebuild later layers if the logic changes.</li>
+  <li><strong>Separation of concerns:</strong> ingestion, cleaning and business logic live in different steps that are easier to test.</li>
+  <li><strong>Reuse:</strong> several reports can read the same gold tables instead of repeating transformations.</li>
+</ul>
+
+<h2>In Microsoft Fabric</h2>
+<p>A common setup is a lakehouse (or one per layer) that stores Delta tables, with <strong>data pipelines</strong> or <strong>notebooks</strong> moving data from one layer to the next. Fabric's SQL analytics endpoint and Power BI can then read the gold tables.</p>
+
+<h2>A minimal PySpark sketch</h2>
+<p>This sketch is meant to be run in a Fabric notebook attached to a lakehouse, where a <code>spark</code> session already exists. The file path and column names are placeholders.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python">from pyspark.sql import functions as F
+
+# Bronze: land the raw file as a Delta table, unchanged
+bronze = (
+    spark.read.format("csv")
+    .option("header", True)
+    .load("Files/raw/orders.csv")        # path inside the attached lakehouse
+)
+bronze.write.mode("overwrite").format("delta").saveAsTable("bronze_orders")
+
+# Silver: fix types, remove duplicates and unusable rows
+silver = (
+    spark.read.table("bronze_orders")
+    .dropDuplicates(["order_id"])
+    .withColumn("order_date", F.to_date("order_date"))
+    .withColumn("amount", F.col("amount").cast("double"))
+    .filter(F.col("amount").isNotNull())
+)
+silver.write.mode("overwrite").format("delta").saveAsTable("silver_orders")
+
+# Gold: business-ready aggregate for reporting
+gold = (
+    spark.read.table("silver_orders")
+    .groupBy("order_date")
+    .agg(F.sum("amount").alias("daily_revenue"))
+)
+gold.write.mode("overwrite").format("delta").saveAsTable("gold_daily_revenue")</code></pre></div>
+
+<h2>Design notes</h2>
+<ul>
+  <li>Decide how each layer is refreshed: full overwrite (simple) or incremental (efficient for large data).</li>
+  <li>Add data quality checks between layers, such as row counts and null checks.</li>
+  <li>Name tables consistently, for example <code>bronze_orders</code>, <code>silver_orders</code>, <code>gold_daily_revenue</code>.</li>
+</ul>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="experience.html"><strong>Experience</strong><span>Data pipeline work in Microsoft Fabric, including Medallion Architecture concepts.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Article Title Goes Here — Subham Nayak</title>
+  <meta name="description" content="Template for new articles.">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">Subham<span>.</span>Nayak</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <nav aria-label="Main">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="experience.html">Experience</a></li>
+          <li><a href="certifications.html">Certifications</a></li>
+          <li><a href="blog.html" aria-current="page">Blog</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <article class="article">
+      <header class="article-head">
+        <div class="article-wrap hero-anim">
+          <a class="back-link" href="blog.html">← Back to Blog</a>
+          <ul class="cat-tags" aria-label="Categories"><li>Python</li></ul>
+          <h1>Article Title Goes Here</h1>
+          <p class="article-intro">Write one or two sentences that tell the reader what they will learn and why it matters.</p>
+          <p class="meta"><!-- Optional publication date: <time datetime="2026-01-31">31 Jan 2026</time> --><span>1 min read</span> <span class="badge-draft">Draft</span></p>
+        </div>
+      </header>
+      <div class="article-wrap article-body">
+<div class="callout draft"><p><strong>Draft template.</strong> Copy this file, rename it (for example <code>blog-my-topic.html</code>), replace the text, and delete this box. See the README for the full steps.</p></div>
+
+<h2>First heading</h2>
+<p>Explain the idea in plain language. Keep paragraphs short.</p>
+<ul>
+  <li>Use lists for steps or key points.</li>
+  <li>Use <strong>bold</strong> for the terms a reader should remember.</li>
+</ul>
+
+<h2>A code example</h2>
+<p>Use <code>language-python</code>, <code>language-sql</code> or <code>language-dax</code> for coloured code. Other languages display as plain text.</p>
+<div class="code-block"><span class="code-lang">Python</span><pre tabindex="0" aria-label="Python code example"><code class="language-python"># Replace this with your own example
+numbers = [3, 5, 8]
+total = sum(numbers)
+print(f"Total: {total}")</code></pre></div>
+
+<h2>A table</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Column A</th><th>Column B</th></tr></thead>
+  <tbody>
+    <tr><td>Value 1</td><td>Value 2</td></tr>
+    <tr><td>Value 3</td><td>Value 4</td></tr>
+  </tbody>
+</table></div>
+
+<h2>An image</h2>
+<p>Save the picture in <code>assets/blog/</code> and use this block:</p>
+<figure class="figure">
+  <div class="placeholder-fig" role="img" aria-label="Image placeholder">Replace this box with an img tag that points to assets/blog/your-image.png</div>
+  <figcaption>Describe what the picture shows.</figcaption>
+</figure>
+
+<h2>Summary</h2>
+<div class="callout"><p><strong>Takeaway.</strong> Finish with the one thing you want the reader to remember.</p></div>
+
+        <aside class="related" aria-labelledby="related-h">
+          <h2 id="related-h">Related in this portfolio</h2>
+          <ul class="related-list"><li><a href="projects.html"><strong>A related project</strong><span>One line saying how this article connects to the project.</span></a></li></ul>
+        </aside>
+
+        <p class="article-foot"><a class="btn btn-outline" href="blog.html">← Back to all articles</a></p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span data-year>2026</span> Subham Nayak</span>
+      <ul>
+        <li><a href="https://github.com/Subhamnayak20" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/subham-nayak-2ba433291" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="experience.html#resume">Resume</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>
